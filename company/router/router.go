@@ -23,5 +23,6 @@ func registerRoutes(registerRoutesRouter *gin.Engine, dbConnectionObjectRegister
 	routeGroup := registerRoutesRouter.Group("/api/v1/")
 	{
 		routeGroup.GET("/events", empRouterToController.GetEmployees)
+		routeGroup.POST("/create", empRouterToController.InsertEmployee)
 	}
 }

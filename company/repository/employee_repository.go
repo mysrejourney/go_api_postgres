@@ -9,7 +9,8 @@ import (
 
 // EmployeeRepositoryInterface : Defining interface for all API calls
 type EmployeeRepositoryInterface interface {
-	GetEmployees(ctx *gin.Context) (db.MultipleEmployeesDBModel, error) // Retrieve all employee details
+	GetEmployees(ctx *gin.Context) (db.MultipleEmployeesDBModel, error)        // Retrieve all employee details
+	InsertEmployee(ctx *gin.Context, empRecord db.EmployeeDBModelStruct) error // Insert employee details into table in db
 }
 
 // EmployeeRepositoryDBCollection : Defining struct datatype for db object
@@ -51,4 +52,48 @@ func (empStruct EmployeeRepositoryDBCollection) GetEmployees(context *gin.Contex
 
 	// If success in executing the query, then error is nil. Then return the employee details in the form of DB Model
 	return employeeDetails, nil
+}
+
+/*
+// function name	: GetEmployees
+// arguments		: router engine object
+// return			: employees details from DB in the form of DB MODEL
+*/
+
+func (empStruct EmployeeRepositoryDBCollection) InsertEmployee(context *gin.Context, insertEmployeeRecord db.EmployeeDBModelStruct) error {
+	// Query to be executed in postgres database
+	insertQuery := `INSERT INTO company(id, name, age, address, salary, join_date) VALUES ($1, $2, $3, $4, $5, $6)`
+
+	transaction, errBegin := empStruct.EmployeeRepositoryDBCollectionObject.Beginx()
+	if errBegin != nil {
+		fmt.Println("Error encountered while beginning sql transaction. Error: ", errBegin.Error())
+		return errBegin
+	}
+
+	defer func() {
+		if errBegin != nil {
+			fmt.Println("Rolling back changes, due to error: ", errBegin)
+			_ = transaction.Rollback()
+			return
+		}
+		fmt.Println("Successfully inserted employee record, committing the transaction")
+		_ = transaction.Commit()
+
+	}()
+	// Execute the query and get the results
+	result, errorInsert := transaction.ExecContext(context, insertQuery, insertEmployeeRecord.Id, insertEmployeeRecord.Name, insertEmployeeRecord.Age, insertEmployeeRecord.Address, insertEmployeeRecord.Salary, insertEmployeeRecord.JoinDate)
+	//result, errorInsert := transaction.ExecContext(context, insertQuery)
+
+	if errorInsert != nil {
+		fmt.Println("Error encountered inserting employee record in repository layer. Error: ", errorInsert.Error())
+		return errorInsert
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	fmt.Printf("Number of rows affected: %v: ", rowsAffected)
+	if rowsAffected == 0 {
+		fmt.Println("Failed to insert employee record in db. no rows affected in repository layer")
+		return errorInsert
+	}
+	return nil
 }

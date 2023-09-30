@@ -33,11 +33,11 @@ func FromDMEmployeeModelToAPIModel(EmployeeDetailsMapper db.MultipleEmployeesDBM
 
 func ToEmployeeAPIModel(EmployeeDetailsMapper db.EmployeeDBModelStruct) api.EmployeeAPIModelStruct {
 	return api.EmployeeAPIModelStruct{
-		APIId:       EmployeeDetailsMapper.APIId,
-		APIName:     EmployeeDetailsMapper.APIName,
-		APIAge:      EmployeeDetailsMapper.APIAge,
-		APIAddress:  EmployeeDetailsMapper.APIAddress,
-		APISalary:   EmployeeDetailsMapper.APISalary,
-		APIJoinDate: EmployeeDetailsMapper.APIJoinDate.Format("2006-01-02"),
+		APIId:       EmployeeDetailsMapper.Id,
+		APIName:     EmployeeDetailsMapper.Name,
+		APIAge:      EmployeeDetailsMapper.Age,
+		APIAddress:  EmployeeDetailsMapper.Address,
+		APISalary:   EmployeeDetailsMapper.Salary,
+		APIJoinDate: EmployeeDetailsMapper.JoinDate.Format("2006-01-02"),
 	}
 }

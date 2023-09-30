@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"company/model/api"
 	"company/service"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -11,6 +12,7 @@ import (
 
 type EmployeeControllerInterface interface {
 	GetEmployees(ctx *gin.Context)
+	InsertEmployee(ctx *gin.Context)
 }
 
 // EmployeeControllerStruct : Defining struct datatype for service interface
@@ -49,4 +51,31 @@ func (EmpControllerStruct EmployeeControllerStruct) GetEmployees(ctx *gin.Contex
 	// If success in calling to service interface, then error is nil.
 	//Then return the employee details and send the http response code
 	ctx.JSON(http.StatusOK, employeeDetailsController)
+}
+
+/*
+// function name	: InsertEmployee
+// arguments		: router engine object
+// return			: Binding the API result and send the response code
+*/
+
+func (EmpControllerStruct EmployeeControllerStruct) InsertEmployee(ctx *gin.Context) {
+
+	fmt.Println("We are in controller layer!")
+
+	var employeeControllerInsertRecord api.EmployeeAPIModelStruct
+	bindErr := ctx.BindJSON(&employeeControllerInsertRecord)
+	if bindErr != nil {
+		fmt.Printf("Failed to read request body from request in controller layer. Error: %v", bindErr.Error())
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": bindErr.Error()})
+		return
+	}
+
+	err := EmpControllerStruct.EmployeeControllerInterfaceToService.InsertEmployee(ctx, employeeControllerInsertRecord)
+	if err != nil {
+		fmt.Printf("Failed to insert employee record in controller layer. Error: %v", err.Error())
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	return
 }
