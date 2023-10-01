@@ -13,6 +13,8 @@ import (
 type EmployeeControllerInterface interface {
 	GetEmployees(ctx *gin.Context)
 	InsertEmployee(ctx *gin.Context)
+	UpdateEmployee(ctx *gin.Context)
+	DeleteEmployee(ctx *gin.Context)
 }
 
 // EmployeeControllerStruct : Defining struct datatype for service interface
@@ -74,6 +76,60 @@ func (EmpControllerStruct EmployeeControllerStruct) InsertEmployee(ctx *gin.Cont
 	err := EmpControllerStruct.EmployeeControllerInterfaceToService.InsertEmployee(ctx, employeeControllerInsertRecord)
 	if err != nil {
 		fmt.Printf("Failed to insert employee record in controller layer. Error: %v", err.Error())
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	return
+}
+
+/*
+// function name	: UpdateEmployee
+// arguments		: router engine object
+// return			: Binding the API result and send the response code
+*/
+
+func (EmpControllerStruct EmployeeControllerStruct) UpdateEmployee(ctx *gin.Context) {
+
+	fmt.Println("We are in controller layer!")
+
+	var employeeControllerUpdateRecord api.EmployeeAPIModelStruct
+	bindErr := ctx.BindJSON(&employeeControllerUpdateRecord)
+	if bindErr != nil {
+		fmt.Printf("Failed to read request body from request in controller layer. Error: %v", bindErr.Error())
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": bindErr.Error()})
+		return
+	}
+
+	err := EmpControllerStruct.EmployeeControllerInterfaceToService.UpdateEmployee(ctx, employeeControllerUpdateRecord)
+	if err != nil {
+		fmt.Printf("Failed to update employee record in controller layer. Error: %v", err.Error())
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	return
+}
+
+/*
+// function name	: DeleteEmployee
+// arguments		: router engine object
+// return			: Binding the API result and send the response code
+*/
+
+func (EmpControllerStruct EmployeeControllerStruct) DeleteEmployee(ctx *gin.Context) {
+
+	fmt.Println("We are in controller layer!")
+
+	var employeeControllerDeleteRecord api.EmployeeAPIModelStruct
+	bindErr := ctx.BindJSON(&employeeControllerDeleteRecord)
+	if bindErr != nil {
+		fmt.Printf("Failed to read request body from request in controller layer. Error: %v", bindErr.Error())
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": bindErr.Error()})
+		return
+	}
+
+	err := EmpControllerStruct.EmployeeControllerInterfaceToService.DeleteEmployee(ctx, employeeControllerDeleteRecord)
+	if err != nil {
+		fmt.Printf("Failed to delete employee record in controller layer. Error: %v", err.Error())
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

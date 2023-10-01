@@ -24,5 +24,7 @@ func registerRoutes(registerRoutesRouter *gin.Engine, dbConnectionObjectRegister
 	{
 		routeGroup.GET("/events", empRouterToController.GetEmployees)
 		routeGroup.POST("/create", empRouterToController.InsertEmployee)
+		routeGroup.PUT("/update", empRouterToController.UpdateEmployee)
+		routeGroup.DELETE("/delete", empRouterToController.DeleteEmployee)
 	}
 }

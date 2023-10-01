@@ -9,8 +9,10 @@ import (
 
 // EmployeeRepositoryInterface : Defining interface for all API calls
 type EmployeeRepositoryInterface interface {
-	GetEmployees(ctx *gin.Context) (db.MultipleEmployeesDBModel, error)        // Retrieve all employee details
-	InsertEmployee(ctx *gin.Context, empRecord db.EmployeeDBModelStruct) error // Insert employee details into table in db
+	GetEmployees(ctx *gin.Context) (db.MultipleEmployeesDBModel, error)              // Retrieve all employee details
+	InsertEmployee(ctx *gin.Context, empInsertRecord db.EmployeeDBModelStruct) error // Insert employee details into table in db
+	UpdateEmployee(ctx *gin.Context, empUpdateRecord db.EmployeeDBModelStruct) error // Update employee details into table in db
+	DeleteEmployee(ctx *gin.Context, empDeleteRecord db.EmployeeDBModelStruct) error // Delete employee details into table in db
 }
 
 // EmployeeRepositoryDBCollection : Defining struct datatype for db object
@@ -55,7 +57,7 @@ func (empStruct EmployeeRepositoryDBCollection) GetEmployees(context *gin.Contex
 }
 
 /*
-// function name	: GetEmployees
+// function name	: InsertEmployee
 // arguments		: router engine object
 // return			: employees details from DB in the form of DB MODEL
 */
@@ -70,9 +72,12 @@ func (empStruct EmployeeRepositoryDBCollection) InsertEmployee(context *gin.Cont
 		return errBegin
 	}
 
+	// Execute the query and get the results
+	result, errorInsert := transaction.ExecContext(context, insertQuery, insertEmployeeRecord.Id, insertEmployeeRecord.Name, insertEmployeeRecord.Age, insertEmployeeRecord.Address, insertEmployeeRecord.Salary, insertEmployeeRecord.JoinDate)
+
 	defer func() {
-		if errBegin != nil {
-			fmt.Println("Rolling back changes, due to error: ", errBegin)
+		if errorInsert != nil {
+			fmt.Println("Rolling back changes, due to error: ", errorInsert)
 			_ = transaction.Rollback()
 			return
 		}
@@ -80,10 +85,6 @@ func (empStruct EmployeeRepositoryDBCollection) InsertEmployee(context *gin.Cont
 		_ = transaction.Commit()
 
 	}()
-	// Execute the query and get the results
-	result, errorInsert := transaction.ExecContext(context, insertQuery, insertEmployeeRecord.Id, insertEmployeeRecord.Name, insertEmployeeRecord.Age, insertEmployeeRecord.Address, insertEmployeeRecord.Salary, insertEmployeeRecord.JoinDate)
-	//result, errorInsert := transaction.ExecContext(context, insertQuery)
-
 	if errorInsert != nil {
 		fmt.Println("Error encountered inserting employee record in repository layer. Error: ", errorInsert.Error())
 		return errorInsert
@@ -94,6 +95,97 @@ func (empStruct EmployeeRepositoryDBCollection) InsertEmployee(context *gin.Cont
 	if rowsAffected == 0 {
 		fmt.Println("Failed to insert employee record in db. no rows affected in repository layer")
 		return errorInsert
+	}
+	return nil
+}
+
+/*
+// function name	: UpdateEmployee
+// arguments		: router engine object
+// return			: employees details from DB in the form of DB MODEL
+*/
+
+func (empStruct EmployeeRepositoryDBCollection) UpdateEmployee(context *gin.Context, updateEmployeeRecord db.EmployeeDBModelStruct) error {
+	fmt.Printf("Name: %v: ", updateEmployeeRecord.Name)
+	fmt.Printf("Age: %v: ", updateEmployeeRecord.Age)
+	fmt.Printf("Address: %v: ", updateEmployeeRecord.Address)
+	fmt.Printf("Salary: %v: ", updateEmployeeRecord.Salary)
+	fmt.Printf("Join Date: %v: ", updateEmployeeRecord.JoinDate)
+	// Query to be executed in postgres database
+	updateQuery := `UPDATE company SET name=$2, age=$3, address=$4, salary=$5, join_date=$6 WHERE id=$1`
+
+	transaction, errBegin := empStruct.EmployeeRepositoryDBCollectionObject.Beginx()
+	if errBegin != nil {
+		fmt.Println("Error encountered while beginning sql transaction. Error: ", errBegin.Error())
+		return errBegin
+	}
+
+	// Execute the query and get the results
+	result, errorUpdate := transaction.ExecContext(context, updateQuery, updateEmployeeRecord.Id, updateEmployeeRecord.Name, updateEmployeeRecord.Age, updateEmployeeRecord.Address, updateEmployeeRecord.Salary, updateEmployeeRecord.JoinDate)
+
+	defer func() {
+		if errorUpdate != nil {
+			fmt.Println("Rolling back changes, due to error: ", errorUpdate)
+			_ = transaction.Rollback()
+			return
+		}
+		fmt.Println("Successfully updated employee record, committing the transaction")
+		_ = transaction.Commit()
+
+	}()
+	if errorUpdate != nil {
+		fmt.Println("Error encountered updating employee record in repository layer. Error: ", errorUpdate.Error())
+		return errorUpdate
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	fmt.Printf("Number of rows affected: %v: ", rowsAffected)
+	if rowsAffected == 0 {
+		fmt.Println("Failed to update employee record in db. no rows affected in repository layer")
+		return errorUpdate
+	}
+	return nil
+}
+
+/*
+// function name	: DeleteEmployee
+// arguments		: router engine object
+// return			: employees details from DB in the form of DB MODEL
+*/
+
+func (empStruct EmployeeRepositoryDBCollection) DeleteEmployee(context *gin.Context, deleteEmployeeRecord db.EmployeeDBModelStruct) error {
+	// Query to be executed in postgres database
+	deleteQuery := `DELETE FROM company WHERE id = ($1)`
+
+	transaction, errBegin := empStruct.EmployeeRepositoryDBCollectionObject.Beginx()
+	if errBegin != nil {
+		fmt.Println("Error encountered while beginning sql transaction. Error: ", errBegin.Error())
+		return errBegin
+	}
+
+	// Execute the query and get the results
+	result, errorDelete := transaction.ExecContext(context, deleteQuery, deleteEmployeeRecord.Id)
+
+	defer func() {
+		if errorDelete != nil {
+			fmt.Println("Rolling back changes, due to error: ", errorDelete)
+			_ = transaction.Rollback()
+			return
+		}
+		fmt.Println("Successfully deleted employee record, committing the transaction")
+		_ = transaction.Commit()
+
+	}()
+	if errorDelete != nil {
+		fmt.Println("Error encountered deleting employee record in repository layer. Error: ", errorDelete.Error())
+		return errorDelete
+	}
+
+	rowsAffected, _ := result.RowsAffected()
+	fmt.Printf("Number of rows affected: %v: ", rowsAffected)
+	if rowsAffected == 0 {
+		fmt.Println("Failed to delete employee record in db. no rows affected in repository layer")
+		return errorDelete
 	}
 	return nil
 }
