@@ -4,6 +4,7 @@ import (
 	"company/model/db"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -37,6 +38,7 @@ func EmployeeRepositoryToRouter(EmployeeRepositoryToRouterDBObject *sqlx.DB) Emp
 */
 
 func (empStruct EmployeeRepositoryDBCollection) GetEmployees(context *gin.Context) (db.MultipleEmployeesDBModel, error) {
+	fmt.Println("We are in repository layer")
 	// employeeDetails is a type of MultipleEmployeesDBModel variable and store employees details from DB in the form of DB Model
 	var employeeDetails db.MultipleEmployeesDBModel
 
@@ -64,7 +66,10 @@ func (empStruct EmployeeRepositoryDBCollection) GetEmployees(context *gin.Contex
 
 func (empStruct EmployeeRepositoryDBCollection) InsertEmployee(context *gin.Context, insertEmployeeRecord db.EmployeeDBModelStruct) error {
 	// Query to be executed in postgres database
-	insertQuery := `INSERT INTO company(id, name, age, address, salary, join_date) VALUES ($1, $2, $3, $4, $5, $6)`
+	// Below is for Postgres
+	//insertQuery := `INSERT INTO company(id, name, age, address, salary, join_date) VALUES ($1, $2, $3, $4, $5, $6)`
+	// Below is for mysql
+	insertQuery := `INSERT INTO company(id, name, age, address, salary, join_date) VALUES (?, ?, ?, ?, ?, ?)`
 
 	transaction, errBegin := empStruct.EmployeeRepositoryDBCollectionObject.Beginx()
 	if errBegin != nil {
@@ -112,7 +117,10 @@ func (empStruct EmployeeRepositoryDBCollection) UpdateEmployee(context *gin.Cont
 	fmt.Printf("Salary: %v: ", updateEmployeeRecord.Salary)
 	fmt.Printf("Join Date: %v: ", updateEmployeeRecord.JoinDate)
 	// Query to be executed in postgres database
-	updateQuery := `UPDATE company SET name=$2, age=$3, address=$4, salary=$5, join_date=$6 WHERE id=$1`
+	//Below is for Postgres
+	//updateQuery := `UPDATE company SET name=$2, age=$3, address=$4, salary=$5, join_date=$6 WHERE id=$1`
+	//Below is for mysql
+	updateQuery := `UPDATE company SET name=?, age=?, address=?, salary=?, join_date=? WHERE id=?`
 
 	transaction, errBegin := empStruct.EmployeeRepositoryDBCollectionObject.Beginx()
 	if errBegin != nil {
@@ -121,8 +129,10 @@ func (empStruct EmployeeRepositoryDBCollection) UpdateEmployee(context *gin.Cont
 	}
 
 	// Execute the query and get the results
-	result, errorUpdate := transaction.ExecContext(context, updateQuery, updateEmployeeRecord.Id, updateEmployeeRecord.Name, updateEmployeeRecord.Age, updateEmployeeRecord.Address, updateEmployeeRecord.Salary, updateEmployeeRecord.JoinDate)
-
+	//Below is for Postgres
+	//result, errorUpdate := transaction.ExecContext(context, updateQuery, updateEmployeeRecord.Id, updateEmployeeRecord.Name, updateEmployeeRecord.Age, updateEmployeeRecord.Address, updateEmployeeRecord.Salary, updateEmployeeRecord.JoinDate)
+	//Below is for mysql
+	result, errorUpdate := transaction.ExecContext(context, updateQuery, updateEmployeeRecord.Name, updateEmployeeRecord.Age, updateEmployeeRecord.Address, updateEmployeeRecord.Salary, updateEmployeeRecord.JoinDate, updateEmployeeRecord.Id)
 	defer func() {
 		if errorUpdate != nil {
 			fmt.Println("Rolling back changes, due to error: ", errorUpdate)
@@ -155,7 +165,10 @@ func (empStruct EmployeeRepositoryDBCollection) UpdateEmployee(context *gin.Cont
 
 func (empStruct EmployeeRepositoryDBCollection) DeleteEmployee(context *gin.Context, deleteEmployeeRecord db.EmployeeDBModelStruct) error {
 	// Query to be executed in postgres database
-	deleteQuery := `DELETE FROM company WHERE id = ($1)`
+	//Below is for Postgres
+	//deleteQuery := `DELETE FROM company WHERE id = ($1)`
+	//Below is for mysql
+	deleteQuery := `DELETE FROM company WHERE id = ?`
 
 	transaction, errBegin := empStruct.EmployeeRepositoryDBCollectionObject.Beginx()
 	if errBegin != nil {

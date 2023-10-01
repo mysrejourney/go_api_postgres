@@ -41,6 +41,7 @@ func EmployeeServiceToRouter(employeeRepo repository.EmployeeRepositoryInterface
 */
 
 func (empServiceStruct EmployeeServiceStruct) GetEmployees(context *gin.Context) (api.GetEmployeeResponseAPIModel, error) {
+	fmt.Println("We are in service layer")
 	// employeeDetailsService is a variable and store employees details from DB and convert them in the form of API Model
 	employeeDetailsService, err := empServiceStruct.EmployeeServiceInterfaceToRepository.GetEmployees(context)
 

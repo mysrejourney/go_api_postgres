@@ -40,6 +40,7 @@ func EmployeeControllerToRouter(empService service.EmployeeServiceInterface) Emp
 */
 
 func (EmpControllerStruct EmployeeControllerStruct) GetEmployees(ctx *gin.Context) {
+	fmt.Println("We are in controller layer")
 	// employeeDetailsController is a variable and store API result and send the http response code
 	employeeDetailsController, err := EmpControllerStruct.EmployeeControllerInterfaceToService.GetEmployees(ctx)
 

@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"os"
@@ -61,6 +62,9 @@ func ConstructDsn() string {
 func InitializeDatabaseConnection() (*sqlx.DB, error) {
 	var dbObject *sqlx.DB
 	var err error
-	dbObject, err = sqlx.Open("postgres", ConstructDsn())
+	// Below is for Postgres
+	//dbObject, err = sqlx.Open("postgres", ConstructDsn())
+	// Below is for mysql
+	dbObject, err = sqlx.Open("mysql", "root:Secret@tcp(localhost:3306)/testdb?parseTime=true")
 	return dbObject, err
 }
